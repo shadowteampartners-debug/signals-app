@@ -8,48 +8,85 @@
     <style>
         body { background-color: #0f111a; color: #ffffff; font-family: sans-serif; -webkit-user-select: none; }
         .glass-panel { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); }
-        .active-border { border: 2px solid #00d2ff; background: rgba(0, 210, 255, 0.1); }
+        .active-border { border: 2px solid #00d2ff !important; background: rgba(0, 210, 255, 0.1) !important; opacity: 1 !important; }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="p-5 flex flex-col min-h-screen">
+<body class="p-5 flex flex-col min-h-screen max-w-md mx-auto">
     <div class="flex items-center gap-3 mb-8">
         <div class="w-10 h-10 rounded-full border-2 border-cyan-400 flex items-center justify-center text-cyan-400 font-bold">◎</div>
-        <h1 class="text-lg font-bold tracking-widest uppercase text-gray-200">Торговые Сигналы</h1>
+        <h1 class="text-lg font-bold tracking-widest uppercase text-gray-200 text-sm">Торговые Сигналы</h1>
     </div>
 
     <div class="mb-6">
         <label class="text-[10px] text-gray-500 uppercase font-black mb-2 block tracking-widest">Валютная пара</label>
-        <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
-            <span class="font-medium">OTC EUR/USD</span>
-            <span>▼</span>
-        </div>
+        <select id="pairSelect" class="w-full bg-[#1b1e2e] border border-gray-700 rounded-xl p-4 outline-none appearance-none glass-panel">
+            <option value="OTC EUR/USD">OTC EUR/USD</option>
+            <option value="OTC GBP/USD">OTC GBP/USD</option>
+            <option value="BTC/USDT">BTC/USDT</option>
+        </select>
     </div>
 
     <div class="mb-8">
         <label class="text-[10px] text-gray-500 uppercase font-black mb-2 block tracking-widest">Время экспирации</label>
-        <div class="grid grid-cols-3 gap-3">
-            <div class="glass-panel active-border p-3 rounded-2xl text-center">
+        <div class="grid grid-cols-3 gap-3" id="timeGrid">
+            <div onclick="selectTime(this, '5s')" class="time-btn glass-panel active-border p-3 rounded-2xl text-center cursor-pointer">
                 <div class="text-sm font-bold">5s</div>
-                <div class="text-[9px] text-cyan-400/70">5 seconds</div>
             </div>
-            <div class="glass-panel p-3 rounded-2xl text-center opacity-40">
+            <div onclick="selectTime(this, '1m')" class="time-btn glass-panel p-3 rounded-2xl text-center cursor-pointer opacity-40">
                 <div class="text-sm font-bold">1m</div>
             </div>
-            <div class="glass-panel p-3 rounded-2xl text-center opacity-40">
+            <div onclick="selectTime(this, '5m')" class="time-btn glass-panel p-3 rounded-2xl text-center cursor-pointer opacity-40">
                 <div class="text-sm font-bold">5m</div>
             </div>
         </div>
     </div>
 
-    <button class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-transform mb-8">
+    <button onclick="generateSignal()" id="mainBtn" class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-transform mb-8">
         ПОЛУЧИТЬ СИГНАЛ
     </button>
 
-    <div class="glass-panel p-6 rounded-[2rem] text-center border-white/5">
-        <p class="text-xs text-gray-500 mb-2">OTC EUR/USD 5s</p>
-        <p class="text-4xl font-black text-green-400 uppercase mb-5">Покупать</p>
+    <div id="resultBlock" class="glass-panel p-6 rounded-[2rem] text-center border-white/5 hidden">
+        <p id="resPair" class="text-xs text-gray-500 mb-2"></p>
+        <p id="resDir" class="text-4xl font-black uppercase mb-5"></p>
         <p class="text-[10px] text-gray-400 uppercase mb-1">Уровень уверенности</p>
-        <p class="text-orange-400 font-black text-lg">Средний</p>
+        <p id="resConf" class="font-black text-lg"></p>
     </div>
+
+    <script>
+        let selectedTime = '5s';
+
+        function selectTime(el, time) {
+            document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active-border'));
+            el.classList.add('active-border');
+            selectedTime = time;
+        }
+
+        function generateSignal() {
+            const btn = document.getElementById('mainBtn');
+            const result = document.getElementById('resultBlock');
+            const pair = document.getElementById('pairSelect').value;
+            
+            btn.innerText = "АНАЛИЗ...";
+            btn.disabled = true;
+            result.classList.add('hidden');
+
+            setTimeout(() => {
+                btn.innerText = "ПОЛУЧИТЬ СИГНАЛ";
+                btn.disabled = false;
+                
+                const isUp = Math.random() > 0.5;
+                const conf = Math.floor(Math.random() * (95 - 70 + 1)) + 70;
+
+                document.getElementById('resPair').innerText = `${pair} ${selectedTime}`;
+                document.getElementById('resDir').innerText = isUp ? "Покупать ▲" : "Продавать ▼";
+                document.getElementById('resDir').className = `text-4xl font-black uppercase mb-5 ${isUp ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('resConf').innerText = conf + "%";
+                document.getElementById('resConf').className = `font-black text-lg ${conf > 85 ? 'text-orange-400' : 'text-yellow-400'}`;
+                
+                result.classList.remove('hidden');
+            }, 1500);
+        }
+    </script>
 </body>
 </html>
